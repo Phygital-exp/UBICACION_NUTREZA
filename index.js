@@ -21,26 +21,28 @@ app.get("/api/validar", async (req, res) => {
         const cedula = req.query.cedula;
 
         if (!cedula) {
-            return res.status(400).json({ 
-                existe: false, 
-                mensaje: "Cédula no proporcionada" 
+            return res.status(400).json({
+                existe: false,
+                mensaje: "Cédula no proporcionada"
             });
         }
 
         console.log(`Validando cédula: ${cedula}`);
 
         const response = await fetch(NUTRESA_USUARIOS_URL, { headers: AUTH_HEADERS });
-        
+
         if (!response.ok) {
+            const errorBody = await response.text();
+            console.error(`❌ NUTRESA_USUARIOS respondió ${response.status}:`, errorBody);
             throw new Error(`Error al consultar NUTRESA_USUARIOS: ${response.status}`);
         }
 
         const data = await response.json();
-        
+
         let usuarioEncontrado = null;
-        
+
         if (data.result && Array.isArray(data.result)) {
-            usuarioEncontrado = data.result.find(usuario => 
+            usuarioEncontrado = data.result.find(usuario =>
                 usuario.CEDULA && usuario.CEDULA.toString() === cedula.toString()
             );
         }
@@ -60,9 +62,9 @@ app.get("/api/validar", async (req, res) => {
         }
     } catch (err) {
         console.error("Error en la validación:", err);
-        res.status(500).json({ 
+        res.status(500).json({
             existe: false,
-            error: "Error al validar usuario" 
+            error: "Error al validar usuario"
         });
     }
 });
@@ -75,7 +77,7 @@ app.post("/api/enviar-ubicacion", async (req, res) => {
         console.log(`📍 Datos recibidos:`, { CEDULA, LATITUD, LONGITUD });
 
         if (!CEDULA || LATITUD === undefined || LONGITUD === undefined) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
                 mensaje: "Cédula, latitud o longitud no proporcionada"
             });
@@ -119,7 +121,7 @@ app.post("/api/enviar-ubicacion", async (req, res) => {
         }
     } catch (err) {
         console.error("Error al enviar ubicación:", err);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: "Error al enviar ubicación",
             details: err.message
@@ -132,15 +134,15 @@ app.get("/api/Levapan/pdv", async (req, res) => {
     try {
         const tipo = req.query.tipo;
         let apiUrl;
-        
+
         if (tipo === 'independiente') {
             apiUrl = "https://botai.smartdataautomation.com/api_backend_ai/dinamic-db/report/119/Levapan_PDVs_independientes";
         } else {
             apiUrl = "https://botai.smartdataautomation.com/api_backend_ai/dinamic-db/report/119/Levapan_PDVs";
         }
-        
+
         console.log(`Consultando API: ${apiUrl}`);
-        
+
         const response = await fetch(apiUrl, { headers: AUTH_HEADERS });
         const data = await response.json();
         res.json(data);
@@ -160,7 +162,7 @@ app.post("/api/debug", (req, res) => {
     console.log("=== DEBUG DATA ===");
     console.log("Headers:", req.headers);
     console.log("Body:", JSON.stringify(req.body, null, 2));
-    res.json({ 
+    res.json({
         received: req.body,
         message: "Datos recibidos en debug"
     });
