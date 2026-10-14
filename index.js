@@ -12,6 +12,18 @@ const AUTH_HEADERS = {
 const NUTRESA_USUARIOS_URL = "https://botai.smartdataautomation.com/api_backend_ai/dinamic-db/report/119/usuarios_nutresa";
 const NUTRESA_DATA_URL = "https://botai.smartdataautomation.com/api_backend_ai/dinamic-db/report/119/nutresa_geo_usuarios";
 
+// Fecha actual en hora de Colombia, solo el día: "YYYY-MM-DDT00:00:00"
+function obtenerFechaIngreso() {
+    const partes = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Bogota",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    }).formatToParts(new Date());
+    const valor = (tipo) => partes.find((p) => p.type === tipo).value;
+    return `${valor("year")}-${valor("month")}-${valor("day")}T00:00:00`;
+}
+
 app.use(cors());
 app.use(express.json());
 
@@ -89,7 +101,8 @@ app.post("/api/enviar-ubicacion", async (req, res) => {
         const payload = {
             CEDULA: cedulaString,
             LATITUD: parseFloat(LATITUD),
-            LONGITUD: parseFloat(LONGITUD)
+            LONGITUD: parseFloat(LONGITUD),
+            FECHA_INGRESO: obtenerFechaIngreso()
         };
 
         console.log(`📍 Enviando a Alqueria:`, JSON.stringify(payload, null, 2));
